@@ -2,10 +2,16 @@ import scrapeEvents
 import quickstart
 
 if __name__ == "__main__":
-    NUM_OF_WEEKS = 20
-
     driver = scrapeEvents.campusmate_login()
-    events_list = scrapeEvents.get_events(NUM_OF_WEEKS, driver)
+
+    print("何週間分の予定を取得しますか？")
+    try:
+        NUM_OF_WEEKS = int(input(">"))
+    except:
+        print("数字を入力してください")
+        exit()
+
+    events = scrapeEvents.get_events(NUM_OF_WEEKS, driver)
     driver.quit()
 
-    add_events_to_calendar(events_list)
+    quickstart.add_events_to_calendar(events)

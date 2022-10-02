@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-class EventInfoClass:
+class EventInfo:
     def __init__(self, string, date):
         if "時限" in string:
             self.name = string.splitlines()[1]
@@ -51,9 +51,9 @@ def campusmate_login():
 
     driver.implicitly_wait(20)
 
-    elem_username = driver.find_element_by_id("username_input")
-    elem_password = driver.find_element_by_id("password_input")
-    elem_login_button = driver.find_element_by_id("login_button")
+    elem_username = driver.find_element(By.ID, "username_input")
+    elem_password = driver.find_element(By.ID, "password_input")
+    elem_login_button = driver.find_element(By.ID, "login_button")
 
     elem_username.send_keys(USERNAME)
     elem_password.send_keys(PASSWORD)
@@ -62,15 +62,15 @@ def campusmate_login():
     driver.implicitly_wait(20)
 
     try:
-        elem_submit_button = driver.find_element_by_xpath(
+        elem_submit_button = driver.find_element(By.XPATH,
             '//*[@id="t01"]/tbody/tr[2]/td/input'
         )
         elem_submit_button.click()
 
         driver.implicitly_wait(20)
 
-        elem_otp_input = driver.find_element_by_id("password_input")
-        elem_otp_submit_button = driver.find_element_by_id("login_button")
+        elem_otp_input = driver.find_element(By.ID, "password_input")
+        elem_otp_submit_button = driver.find_element(By.ID, "login_button")
 
         print("ワンタイムパスワードを入力してください")
         otp = input(">")
@@ -90,17 +90,17 @@ def get_events(num_of_weeks, driver):
     tokyo_tz = timezone(timedelta(hours=9))
     today = datetime.now(tokyo_tz)  # 取得する授業イベントの始まり
     day_offset = 0
-    events_list = []
+    events = []
 
     # 何周分処理を行うか
     for _ in range(num_of_weeks):
-        next_week_button = driver.find_element_by_id("NextWeekButton")
+        next_week_button = driver.find_element(By.ID, "NextWeekButton")
 
         # 1週間分の処理(jはxpathより)
         for j in range(2, 9):
             event_date = today + timedelta(days=day_offset)
             day_offset += 1
-            daily_events = driver.find_element_by_xpath(
+            daily_events = driver.find_element(By.XPATH,
                 f"/html/body/div[1]/div[2]/table/tbody/tr/td[1]/div[2]/form/div/div[1]/div[2]/table/tbody/tr[3]/td[{j}]"
             )
 
@@ -112,16 +112,10 @@ def get_events(num_of_weeks, driver):
             # 1日分の処理
             for detail in course_detail:
                 string = detail.text
-                tmp = EventInfoClass(string, event_date)
-                events_list.append(tmp)
+                event = EventInfo(string, event_date)
+                events.append(event)
 
         next_week_button.click()
         sleep(2)
 
-    return events_list
-
-
-if __name__ == "__main__":
-    driver = campusmate_login()
-    events_list = get_events(5, driver)
-    driver.quit()
+    return events
