@@ -1,8 +1,3 @@
-'''
-次のURLから初期設定を行なってください。
-https://developers.google.com/calendar/api/quickstart/python
-ダウンロードした0Authクライアントのファイル名は"credentials.json"にして，このファイルと同じディレクトリに置いてください。
-'''
 from __future__ import print_function
 import os.path
 import os
