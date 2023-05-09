@@ -38,50 +38,51 @@ class EventInfo:
 
 
 def campusmate_login():
-    URL = "https://alss-portal.gifu-u.ac.jp/"
+    URL = os.environ.get("CAMPUSMATE_URL")
 
-    USERNAME = os.environ.get("UNI_USER")
-    PASSWORD = os.environ.get("UNI_PASS")
+    USERNAME = os.environ.get("THERS_USER")
+    PASSWORD = os.environ.get("THERS_PASS")
 
     options = ChromeOptions()
-    options.add_argument("--headless") # ヘッドレスモードを有効化
+    # options.add_argument("--headless") # ヘッドレスモードを有効化
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 
     driver.get(URL)
 
-    driver.implicitly_wait(20)
+    driver.implicitly_wait(50)
 
-    elem_username = driver.find_element(By.ID, "username_input")
-    elem_password = driver.find_element(By.ID, "password_input")
-    elem_login_button = driver.find_element(By.ID, "login_button")
+    # Locate the email input field and enter the email
+    email_input = driver.find_element(By.ID, "i0116")
+    email_input.send_keys(USERNAME)
 
-    elem_username.send_keys(USERNAME)
-    elem_password.send_keys(PASSWORD)
-    elem_login_button.click()
+    # Click the "Next" button
+    next_button = driver.find_element(By.ID, "idSIButton9")
+    next_button.click()
 
-    driver.implicitly_wait(20)
+    # Wait for the password input field to appear
+    sleep(2)
 
-    try:
-        elem_submit_button = driver.find_element(By.XPATH,
-            '//*[@id="t01"]/tbody/tr[2]/td/input'
-        )
-        elem_submit_button.click()
+    password_input = driver.find_element(By.ID, "i0118")
+    password_input.send_keys(PASSWORD)
 
-        driver.implicitly_wait(20)
+    signin_button = driver.find_element(By.ID, "idSIButton9")
+    signin_button.click()
 
-        elem_otp_input = driver.find_element(By.ID, "password_input")
-        elem_otp_submit_button = driver.find_element(By.ID, "login_button")
+    sleep(2)
 
-        print("ワンタイムパスワードを入力してください")
-        otp = input(">")
+    one_time_password_input =driver.find_element(By.ID, "idTxtBx_SAOTCC_OTC")
+    one_time_password_input.send_keys(input("ワンタイムパスワードを入力してください\n>"))
 
-        elem_otp_input.send_keys(otp)
-        elem_otp_submit_button.click()
+    verify_button = driver.find_element(By.ID, "idSubmit_SAOTCC_Continue")
+    verify_button.click()
 
-    except:
-        print("ワンタイムパスワードは不要です")
+    stay_signed_in_button = driver.find_element(By.ID, "idSIButton9")
+    stay_signed_in_button.click()
 
     sleep(5)
+
+    accept_button = driver.find_element(By.NAME, "_eventId_proceed")
+    accept_button.click()
 
     return driver
 
