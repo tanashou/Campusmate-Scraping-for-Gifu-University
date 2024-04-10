@@ -1,5 +1,5 @@
-import scrapeEvents
-import quickstart
+import campusmatescraping.scrapeEvents as scrapeEvents
+import campusmatescraping.quickstart as quickstart
 
 if __name__ == "__main__":
     driver = scrapeEvents.campusmate_login()
