@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os.path
 import os
 from urllib.error import HTTPError
@@ -9,7 +8,7 @@ from google.oauth2.credentials import Credentials
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
-CALENDAR_ID = os.getenv("UNI_CALENDAR")
+CALENDAR_ID = os.getenv("GIFU_SCRAPER_CAL_ID")
 
 
 def add_events_to_calendar(events_list):
