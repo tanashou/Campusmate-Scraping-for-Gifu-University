@@ -52,7 +52,7 @@ def wait_for_element(driver, timeout, locator):
     return WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(locator))
 
 
-def campusmate_login():
+def login():
     options = ChromeOptions()
     # Uncomment the line below to enable headless mode
     # options.add_argument("--headless")
@@ -124,4 +124,4 @@ def get_events(num_of_weeks, driver):
 
 
 if __name__ == "__main__":
-    driver = campusmate_login()
+    driver = login()
