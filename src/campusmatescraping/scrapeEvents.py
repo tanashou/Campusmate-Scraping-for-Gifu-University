@@ -1,12 +1,23 @@
 import os
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 from datetime import datetime, timedelta, timezone
-
 from webdriver_manager.chrome import ChromeDriverManager
+
+URL = "https://alss-portal.gifu-u.ac.jp/campusweb/top.do"
+USERNAME = os.environ.get("GIFU_SCRAPER_USERNAME")
+PASSWORD = os.environ.get("GIFU_SCRAPER_PASSWORD")
+EMAIL_INPUT_BOX_ID = "i0116"
+CONFIRM_BUTTON_ID = "idSIButton9"
+PASSWORD_INPUT_BOX_ID = "i0118"
+ONETIME_PASSWORD_INPUT_BOX_ID = "idTxtBx_SAOTCC_OTC"
+VERIFY_BUTTON_ID = "idSubmit_SAOTCC_Continue"
+ACCEPT_BUTTON_XPATH = '//input[@name="_eventId_proceed"]'
 
 
 class EventInfo:
@@ -37,51 +48,40 @@ class EventInfo:
             self.one_day_event = True
 
 
+def wait_for_element(driver, timeout, locator):
+    return WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(locator))
+
+
 def campusmate_login():
-    URL = os.environ.get("CAMPUSMATE_URL")
-
-    USERNAME = os.environ.get("THERS_USER")
-    PASSWORD = os.environ.get("THERS_PASS")
-
     options = ChromeOptions()
-    # options.add_argument("--headless") # ヘッドレスモードを有効化
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    # Uncomment the line below to enable headless mode
+    # options.add_argument("--headless")
 
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.get(URL)
 
-    driver.implicitly_wait(50)
-
-    # Locate the email input field and enter the email
-    email_input = driver.find_element(By.ID, "i0116")
+    email_input = wait_for_element(driver, 10, (By.ID, EMAIL_INPUT_BOX_ID))
     email_input.send_keys(USERNAME)
 
-    # Click the "Next" button
-    next_button = driver.find_element(By.ID, "idSIButton9")
+    next_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
     next_button.click()
 
-    # Wait for the password input field to appear
-    sleep(2)
-
-    password_input = driver.find_element(By.ID, "i0118")
+    password_input = wait_for_element(driver, 10, (By.ID, PASSWORD_INPUT_BOX_ID))
     password_input.send_keys(PASSWORD)
 
-    signin_button = driver.find_element(By.ID, "idSIButton9")
-    signin_button.click()
+    sign_in_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
+    sign_in_button.click()
 
-    sleep(2)
+    one_time_password_input = wait_for_element(driver, 10, (By.ID, ONETIME_PASSWORD_INPUT_BOX_ID))
+    one_time_password_input.send_keys(input("Please enter the one-time password:\n>"))
 
-    one_time_password_input =driver.find_element(By.ID, "idTxtBx_SAOTCC_OTC")
-    one_time_password_input.send_keys(input("ワンタイムパスワードを入力してください\n>"))
-
-    verify_button = driver.find_element(By.ID, "idSubmit_SAOTCC_Continue")
+    verify_button = wait_for_element(driver, 10, (By.ID, VERIFY_BUTTON_ID))
     verify_button.click()
 
-    stay_signed_in_button = driver.find_element(By.ID, "idSIButton9")
+    stay_signed_in_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
     stay_signed_in_button.click()
 
-    sleep(5)
-
-    accept_button = driver.find_element(By.NAME, "_eventId_proceed")
+    accept_button = wait_for_element(driver, 10, (By.XPATH, ACCEPT_BUTTON_XPATH))
     accept_button.click()
 
     return driver
@@ -101,8 +101,9 @@ def get_events(num_of_weeks, driver):
         for j in range(2, 9):
             event_date = today + timedelta(days=day_offset)
             day_offset += 1
-            daily_events = driver.find_element(By.XPATH,
-                f"/html/body/div[1]/div[2]/table/tbody/tr/td[1]/div[2]/form/div/div[1]/div[2]/table/tbody/tr[3]/td[{j}]"
+            daily_events = driver.find_element(
+                By.XPATH,
+                f"/html/body/div[1]/div[2]/table/tbody/tr/td[1]/div[2]/form/div/div[1]/div[2]/table/tbody/tr[3]/td[{j}]",
             )
 
             if daily_events.text == "":  # 取得した日が空欄の場合
@@ -120,3 +121,7 @@ def get_events(num_of_weeks, driver):
         sleep(2)
 
     return events
+
+
+if __name__ == "__main__":
+    driver = campusmate_login()
