@@ -8,6 +8,8 @@ from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 from campusmatescraping.event_info import EventInfo
+from datetime import datetime
+import time
 
 URL = "https://alss-portal.gifu-u.ac.jp/campusweb/top.do"
 USERNAME = os.environ.get("GIFU_SCRAPER_USERNAME")
@@ -73,7 +75,7 @@ def get_week_info(driver):
         date_element = day_element.find_element(By.XPATH, ".//a")
         date_string = date_element.text
 
-        match = re.search(r"(\d+)/(\d+)", date_string)
+        match = re.search(r"(\d+)/\s*(\d+)", date_string)
         month = int(match.group(1))
         day = int(match.group(2))
         result.append((month, day))
@@ -92,22 +94,41 @@ def get_weekly_events(driver):
         for detail in details:
             event_text = detail.find_element(By.XPATH, './/span[contains(@class, "text")]').text.strip()
             period_text = detail.find_element(By.CLASS_NAME, "period").text.strip()
-            # Add the event text to the events list
             daily_events.append((period_text, event_text))
 
-        # Add the events list to the daily_events 2D list
         weekly_events.append(daily_events)
     return weekly_events
 
+
 def get_weekly_events_with_date(driver):
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     week_info = get_week_info(driver)
     weekly_events = get_weekly_events(driver)
     # TODO: ここでクラスに変換して返す
     return list(zip(week_info, weekly_events))
 
 
+def get_events_until(driver, month, day):  # 一年以上先のイベントは取得しない
+    result = []
+
+    current_year = datetime.now().year
+    target_date = datetime(current_year, month, day)
+
+    while True:
+        time.sleep(1) # 要素がロードされるまで待つ。他にいい方法があれば変更したい
+        weekly_events = get_weekly_events_with_date(driver)
+
+        for (event_month, event_day), daily_events in weekly_events:
+            event_date = datetime(current_year, event_month, event_day)
+            if event_date > target_date:
+                return result
+
+            if daily_events:
+                result.append((event_month, event_day, daily_events))
+
+        next_week_button = driver.find_element(By.ID, "NextWeekButton")
+        next_week_button.click()
+
+
 if __name__ == "__main__":
     driver = login()
-    print(get_weekly_events_with_date(driver))
-
+    print(get_events_until(driver, 6, 30))
