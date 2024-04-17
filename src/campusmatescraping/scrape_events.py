@@ -32,27 +32,33 @@ def login():
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.get(URL)
 
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     email_input = wait_for_element(driver, 10, (By.ID, EMAIL_INPUT_BOX_ID))
     email_input.send_keys(USERNAME)
 
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     next_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
     next_button.click()
 
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     password_input = wait_for_element(driver, 10, (By.ID, PASSWORD_INPUT_BOX_ID))
     password_input.send_keys(PASSWORD)
-
     sign_in_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
     sign_in_button.click()
 
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     one_time_password_input = wait_for_element(driver, 10, (By.ID, ONETIME_PASSWORD_INPUT_BOX_ID))
     one_time_password_input.send_keys(input("Please enter the one-time password:\n>"))
 
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     verify_button = wait_for_element(driver, 10, (By.ID, VERIFY_BUTTON_ID))
     verify_button.click()
 
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     stay_signed_in_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
     stay_signed_in_button.click()
 
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     accept_button = wait_for_element(driver, 10, (By.XPATH, ACCEPT_BUTTON_XPATH))
     accept_button.click()
 
@@ -60,15 +66,12 @@ def login():
 
 
 def get_week_info(driver):
-    wait_for_element(driver, 10, (By.XPATH, '//th[contains(@class, "corner_1") or contains(@class, "corner_2")]'))
     day_elements = driver.find_elements(By.XPATH, '//th[contains(@class, "corner_1") or contains(@class, "corner_2")]')
     result = []
 
     for day_element in day_elements:
         date_element = day_element.find_element(By.XPATH, ".//a")
         date_string = date_element.text
-
-        print(date_string)
 
         match = re.search(r"(\d+)/(\d+)", date_string)
         month = int(match.group(1))
@@ -79,8 +82,6 @@ def get_week_info(driver):
 
 
 def get_weekly_events(driver):
-    # TODO: これでページが全部読み込んだかを判定できる。1ページをスクレイピングする前にこれを入れる。他のwait関連を置き換える。
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     td_elements = driver.find_elements(By.XPATH, '//td[contains(@class, "in_line_y")]')
     weekly_events = []
 
@@ -98,7 +99,15 @@ def get_weekly_events(driver):
         weekly_events.append(daily_events)
     return weekly_events
 
+def get_weekly_events_with_date(driver):
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
+    week_info = get_week_info(driver)
+    weekly_events = get_weekly_events(driver)
+    # TODO: ここでクラスに変換して返す
+    return list(zip(week_info, weekly_events))
+
 
 if __name__ == "__main__":
     driver = login()
-    print(get_weekly_events(driver))
+    print(get_weekly_events_with_date(driver))
+
