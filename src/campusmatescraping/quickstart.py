@@ -23,8 +23,7 @@ def add_events_to_calendar(events_list):
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open("token.json", "w") as token:
@@ -34,23 +33,20 @@ def add_events_to_calendar(events_list):
         service = build("calendar", "v3", credentials=creds)
 
         for event in events_list:
-            event_info = {"summary": f"{event.name}"}
+            event_info = {"summary": f"{event.event_text}"}
+            # event_info['location'] = f'{event.location}'
+            # event_info['description'] = f'{event.location}'
 
-            if event.one_day_event:
-                event_info["start"] = {"date": f"{event.date}"}
-                event_info["end"] = {"date": f"{event.date}"}
+            if event.is_one_day_event:
+                event_info["start"] = {"date": f"{event.start_date_time.date()}", "timeZone": "Asia/Tokyo"}
+                event_info["end"] = {"date": f"{event.end_date_time.date()}", 'timeZone': 'Asia/Tokyo'}
 
             else:
-                # event_info['location'] = f'{event.location}'
-                # event_info['description'] = f'{event.location}'
-                event_info["start"] = {"dateTime": f"{event.start_date_time}"}
-                event_info["end"] = {"dateTime": f"{event.end_date_time}"}
+                event_info["start"] = {"dateTime": f"{event.start_date_time}", "timeZone": "Asia/Tokyo"}
+                event_info["end"] = {"dateTime": f"{event.end_date_time}", 'timeZone': 'Asia/Tokyo'}
 
-            insertingEvent = (
-                service.events().insert(calendarId=CALENDAR_ID, body=event_info).execute()
-            )
+            insertingEvent = service.events().insert(calendarId=CALENDAR_ID, body=event_info).execute()
             print(f"Event created: %s" % (insertingEvent.get("summary")))
 
     except HTTPError as error:
-        print('An error occurred: %s' % error)
-
+        print("An error occurred: %s" % error)
