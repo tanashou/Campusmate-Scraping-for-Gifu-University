@@ -21,17 +21,17 @@ charset-normalizer==3.3.2
 google-api-core==2.18.0
     # via google-api-python-client
 google-api-python-client==2.125.0
-    # via campusmatescraping
+    # via gifu-uni-scraper
 google-auth==2.29.0
     # via google-api-core
     # via google-api-python-client
     # via google-auth-httplib2
     # via google-auth-oauthlib
 google-auth-httplib2==0.2.0
-    # via campusmatescraping
+    # via gifu-uni-scraper
     # via google-api-python-client
 google-auth-oauthlib==1.2.0
-    # via campusmatescraping
+    # via gifu-uni-scraper
 googleapis-common-protos==1.63.0
     # via google-api-core
 h11==0.14.0
@@ -74,7 +74,7 @@ requests-oauthlib==2.0.0
 rsa==4.9
     # via google-auth
 selenium==4.19.0
-    # via campusmatescraping
+    # via gifu-uni-scraper
 sniffio==1.3.1
     # via trio
 sortedcontainers==2.4.0
@@ -92,6 +92,6 @@ urllib3==2.2.1
     # via requests
     # via selenium
 webdriver-manager==4.0.1
-    # via campusmatescraping
+    # via gifu-uni-scraper
 wsproto==1.2.0
     # via trio-websocket

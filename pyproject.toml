@@ -1,5 +1,5 @@
 [project]
-name = "campusmatescraping"
+name = "gifu_uni_scraper"
 version = "0.1.0"
 description = "Add your description here"
 authors = [
@@ -30,4 +30,4 @@ main = "python src/gifu_uni_scraper/main.py"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/campusmatescraping"]
+packages = ["src/gifu_uni_scraper"]
