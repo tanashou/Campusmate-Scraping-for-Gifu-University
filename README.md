@@ -1,6 +1,6 @@
-# Campusmate Scraping for Gifu University
+# Gifu University Scraper
 
-岐阜大学の学務情報システムに登録されている講義などの予定をスクレイピングし，Google Calendar に追加します。
+岐阜大学の学務情報システムに登録されている講義予定などをスクレイピングし，Google Calendar に追加します。
 
 # Requirements
 
@@ -12,7 +12,7 @@
 
 # Setup
 
--   rye をインストールしてください(https://rye-up.com/guide/installation/)。 その後、次のコマンドを実行してください。
+-   [ryeをインストール](https://rye-up.com/guide/installation/)してください。 その後、次のコマンドを実行してください。
 
           rye sync
 
