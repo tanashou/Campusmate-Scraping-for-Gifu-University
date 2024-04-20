@@ -26,10 +26,10 @@ def wait_for_element(driver, timeout, locator):
     return WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(locator))
 
 
-def login():
+def login(headless):
     options = ChromeOptions()
-    # Uncomment the line below to enable headless mode
-    # options.add_argument("--headless")
+    if headless:
+        options.add_argument("--headless")
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.get(URL)
