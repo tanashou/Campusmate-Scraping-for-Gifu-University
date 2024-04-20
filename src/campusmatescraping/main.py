@@ -24,9 +24,7 @@ def get_user_input_date():
 if __name__ == "__main__":
     driver = scrape_events.login()
     inputted_date = get_user_input_date()
-
     events = scrape_events.get_events_until(driver, inputted_date.month, inputted_date.day)
-
     driver.quit()
 
     quickstart.add_events_to_calendar(events)
