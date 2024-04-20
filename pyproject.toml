@@ -23,6 +23,9 @@ build-backend = "hatchling.build"
 managed = true
 dev-dependencies = []
 
+[tool.rye.scripts]
+main = "python src/gifu_uni_scraper/main.py"
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
