@@ -50,7 +50,7 @@ def login():
 
     WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     one_time_password_input = wait_for_element(driver, 10, (By.ID, ONETIME_PASSWORD_INPUT_BOX_ID))
-    one_time_password_input.send_keys(input("Please enter the one-time password:\n>"))
+    one_time_password_input.send_keys(input("ワンタイムパスワードを入力してください:\n>"))
 
     WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     verify_button = wait_for_element(driver, 10, (By.ID, VERIFY_BUTTON_ID))
@@ -103,27 +103,45 @@ def get_weekly_events(driver):
 def get_weekly_events_with_date(driver):
     week_info = get_week_info(driver)
     weekly_events = get_weekly_events(driver)
-    # TODO: ここでクラスに変換して返す
     return list(zip(week_info, weekly_events))
 
 
-def get_events_until(driver, month, day):  # 一年以上先のイベントは取得しない
+def parse_events(events):
     result = []
 
-    current_year = datetime.now().year
-    target_date = datetime(current_year, month, day)
+    for datetime, daily_events in events:
+        for period, event_text in daily_events:
+            event = EventInfo(datetime, period, event_text)
+            result.append(event)
 
+    return result
+
+
+def get_events_until(driver, month, day):
+    result = []
+    current_date = datetime.now()
+    target_date = datetime(
+        current_date.year + (month < current_date.month or (month == current_date.month and day < current_date.day)),
+        month,
+        day,
+    )
+
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     while True:
-        time.sleep(1) # 要素がロードされるまで待つ。他にいい方法があれば変更したい
+        time.sleep(1)  # Consider using WebDriverWait for a more efficient approach
         weekly_events = get_weekly_events_with_date(driver)
 
         for (event_month, event_day), daily_events in weekly_events:
-            event_date = datetime(current_year, event_month, event_day)
-            if event_date > target_date:
-                return result
+            event_year = current_date.year + (
+                event_month < current_date.month or (event_month == current_date.month and event_day < current_date.day)
+            )
+            event_datetime = datetime(event_year, event_month, event_day)
+
+            if event_datetime > target_date:
+                return parse_events(result)
 
             if daily_events:
-                result.append((event_month, event_day, daily_events))
+                result.append((event_datetime, daily_events))
 
         next_week_button = driver.find_element(By.ID, "NextWeekButton")
         next_week_button.click()
@@ -131,4 +149,6 @@ def get_events_until(driver, month, day):  # 一年以上先のイベントは�
 
 if __name__ == "__main__":
     driver = login()
-    print(get_events_until(driver, 6, 30))
+    events = get_events_until(driver, 4, 30)
+    for event in events:
+        print(event)

@@ -1,5 +1,7 @@
+from datetime import datetime
+
+
 class EventInfo:
-    # Define a class-level dictionary for period time mappings
     PERIOD_TIMES = {
         "１時限": {"start": (8, 45), "end": (10, 15)},
         "２時限": {"start": (10, 30), "end": (12, 0)},
@@ -8,22 +10,20 @@ class EventInfo:
         "５時限": {"start": (16, 30), "end": (18, 0)},
     }
 
-    def __init__(self, string, date):
-        lines = string.splitlines()  # Store split lines to avoid multiple splits
-        if "時限" in string:
-            self.name = lines[1]
-            self.one_day_event = False
+    def __init__(self, datetime: datetime, period, event_text):
+        self.start_date_time = datetime
+        self.end_date_time = datetime
+        self.event_text = event_text
+        self.is_one_day_event = True
 
-            # Get the start and end times from the dictionary
-            period = lines[0]
-            if period in self.PERIOD_TIMES:
-                start_hour, start_minute = self.PERIOD_TIMES[period]["start"]
-                end_hour, end_minute = self.PERIOD_TIMES[period]["end"]
+        period_time = self.PERIOD_TIMES.get(period)
+        if period_time:
+            self.is_one_day_event = False
+            start_hour, start_minute = period_time["start"]
+            end_hour, end_minute = period_time["end"]
 
-                self.start_date_time = date.replace(hour=start_hour, minute=start_minute).isoformat()
-                self.end_date_time = date.replace(hour=end_hour, minute=end_minute).isoformat()
+            self.start_date_time = self.start_date_time.replace(hour=start_hour, minute=start_minute).isoformat()
+            self.end_date_time = self.end_date_time.replace(hour=end_hour, minute=end_minute).isoformat()
 
-        else:
-            self.date = date.isoformat().split("T")[0]
-            self.name = string
-            self.one_day_event = True
+    def __str__(self) -> str:
+        return f"{self.start_date_time} - {self.end_date_time}: {self.event_text}"
