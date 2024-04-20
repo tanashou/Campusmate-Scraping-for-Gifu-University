@@ -1,4 +1,4 @@
-from campusmatescraping import scrape_events, quickstart
+from gifu_uni_scraper import scrape_events, quickstart
 from datetime import datetime
 
 

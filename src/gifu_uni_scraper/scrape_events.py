@@ -7,13 +7,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
-from campusmatescraping.event_info import EventInfo
+from gifu_uni_scraper.event_info import EventInfo
 from datetime import datetime
 import time
 
 URL = "https://alss-portal.gifu-u.ac.jp/campusweb/top.do"
-USERNAME = os.environ.get("GIFU_SCRAPER_USERNAME")
-PASSWORD = os.environ.get("GIFU_SCRAPER_PASSWORD")
+USERNAME = os.environ.get("GIFU_UNI_SCRAPER_USERNAME")
+PASSWORD = os.environ.get("GIFU_UNI_SCRAPER_PASSWORD")
 EMAIL_INPUT_BOX_ID = "i0116"
 CONFIRM_BUTTON_ID = "idSIButton9"
 PASSWORD_INPUT_BOX_ID = "i0118"
