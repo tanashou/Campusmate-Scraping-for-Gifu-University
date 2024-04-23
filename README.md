@@ -21,8 +21,8 @@
 -   大学のログインに必要なユーザー名やパスワード，予定を追加したい Google カレンダーの ID を環境変数として登録してください。それぞれの環境変数名は次のようにしてください。
     | 変数名 | 値 |
     | ------------ | ---------------- |
-    | GIFU_UNI_SCRAPER_USERNAME | ユーザー名 |
-    | GIFU_UNI_SCRAPER_PASSWORD | パスワード |
+    | TACT_USERNAME | ユーザー名 |
+    | TACT_PASSWORD | パスワード |
     | GIFU_UNI_SCRAPER_CAL_ID | Google カレンダー ID |
 
 # Usage
