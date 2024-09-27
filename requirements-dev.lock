@@ -59,6 +59,8 @@ pyasn1==0.6.0
     # via rsa
 pyasn1-modules==0.4.0
     # via google-auth
+pyotp==2.9.0
+    # via gifu-uni-scraper
 pyparsing==3.1.2
     # via httplib2
 pysocks==1.7.1
@@ -91,7 +93,7 @@ uritemplate==4.1.1
 urllib3==2.2.1
     # via requests
     # via selenium
-webdriver-manager==4.0.1
+webdriver-manager==4.0.2
     # via gifu-uni-scraper
 wsproto==1.2.0
     # via trio-websocket

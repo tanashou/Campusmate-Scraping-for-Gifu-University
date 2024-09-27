@@ -10,7 +10,8 @@ dependencies = [
     "google-api-python-client==2.125.0",
     "google-auth-httplib2==0.2.0",
     "google-auth-oauthlib==1.2.0",
-    "webdriver-manager>=4.0.1",
+    "webdriver-manager>=4.0.2",
+    "pyotp>=2.9.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

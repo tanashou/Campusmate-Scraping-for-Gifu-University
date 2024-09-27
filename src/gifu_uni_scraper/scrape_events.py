@@ -10,6 +10,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from gifu_uni_scraper.event_info import EventInfo
 from datetime import datetime
 import time
+import pyotp
+from urllib.parse import urlparse, parse_qs
 
 URL = "https://alss-portal.gifu-u.ac.jp/campusweb/top.do"
 USERNAME = os.environ.get("TACT_USERNAME")
@@ -22,8 +24,45 @@ VERIFY_BUTTON_ID = "idSubmit_SAOTCC_Continue"
 ACCEPT_BUTTON_XPATH = '//input[@name="_eventId_proceed"]'
 
 
-def wait_for_element(driver, timeout, locator):
-    return WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(locator))
+def wait_for_page_load(driver: webdriver.Chrome):
+    return WebDriverWait(driver, 10).until(
+        lambda d: d.execute_script("return document.readyState") == "complete"  # type: ignore
+    )
+
+
+def get_otp() -> str:
+    otp_uri = os.getenv("TACT_OTP_URI")
+
+    if otp_uri:
+        parsed_uri = urlparse(otp_uri)
+        query_params = parse_qs(parsed_uri.query)
+
+        if "secret" in query_params:
+            secret_key = query_params["secret"][0]
+            totp = pyotp.TOTP(secret_key)
+            otp = totp.now()
+
+            return otp
+        else:
+            raise ValueError(
+                "ワンタイムパスワードを生成できませんでした。URIが正しいか確認してください。"
+            )
+    else:
+        return input("ワンタイムパスワードを入力してください:\n>")
+
+
+def transition_to_otp_input_window(driver) -> None:
+    wait_for_page_load(driver)
+    change_sign_in_mode_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "signInAnotherWay"))
+    )
+    change_sign_in_mode_button.click()
+
+    wait_for_page_load(driver)
+    use_verification_code_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[data-value="PhoneAppOTP"]'))
+    )
+    use_verification_code_button.click()
 
 
 def login(headless):
@@ -31,44 +70,70 @@ def login(headless):
     if headless:
         options.add_argument("--headless")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
     driver.get(URL)
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    email_input = wait_for_element(driver, 10, (By.ID, EMAIL_INPUT_BOX_ID))
+    wait_for_page_load(driver)
+    email_input = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, EMAIL_INPUT_BOX_ID))
+    )
     email_input.send_keys(USERNAME)
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    next_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
+    wait_for_page_load(driver)
+    next_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, CONFIRM_BUTTON_ID))
+    )
     next_button.click()
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    password_input = wait_for_element(driver, 10, (By.ID, PASSWORD_INPUT_BOX_ID))
+    wait_for_page_load(driver)
+    password_input = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, PASSWORD_INPUT_BOX_ID))
+    )
     password_input.send_keys(PASSWORD)
-    sign_in_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
+    sign_in_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, CONFIRM_BUTTON_ID))
+    )
     sign_in_button.click()
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    one_time_password_input = wait_for_element(driver, 10, (By.ID, ONETIME_PASSWORD_INPUT_BOX_ID))
-    one_time_password_input.send_keys(input("ワンタイムパスワードを入力してください:\n>"))
+    transition_to_otp_input_window(driver)
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    verify_button = wait_for_element(driver, 10, (By.ID, VERIFY_BUTTON_ID))
+    wait_for_page_load(driver)
+    otp_input = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, ONETIME_PASSWORD_INPUT_BOX_ID))
+    )
+
+    otp = get_otp()
+    otp_input.send_keys(otp)
+
+    wait_for_page_load(driver)
+    verify_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, VERIFY_BUTTON_ID))
+    )
     verify_button.click()
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    stay_signed_in_button = wait_for_element(driver, 10, (By.ID, CONFIRM_BUTTON_ID))
+    wait_for_page_load(driver)
+    stay_signed_in_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, CONFIRM_BUTTON_ID))
+    )
     stay_signed_in_button.click()
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    accept_button = wait_for_element(driver, 10, (By.XPATH, ACCEPT_BUTTON_XPATH))
+    wait_for_page_load(driver)
+    accept_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, ACCEPT_BUTTON_XPATH))
+    )
     accept_button.click()
+
+    wait_for_page_load(driver)
 
     return driver
 
 
 def get_week_info(driver):
-    day_elements = driver.find_elements(By.XPATH, '//th[contains(@class, "corner_1") or contains(@class, "corner_2")]')
+    day_elements = driver.find_elements(
+        By.XPATH, '//th[contains(@class, "corner_1") or contains(@class, "corner_2")]'
+    )
     result = []
 
     for day_element in day_elements:
@@ -92,7 +157,9 @@ def get_weekly_events(driver):
         daily_events = []
 
         for detail in details:
-            event_text = detail.find_element(By.XPATH, './/span[contains(@class, "text")]').text.strip()
+            event_text = detail.find_element(
+                By.XPATH, './/span[contains(@class, "text")]'
+            ).text.strip()
             period_text = detail.find_element(By.CLASS_NAME, "period").text.strip()
             daily_events.append((period_text, event_text))
 
@@ -121,19 +188,26 @@ def get_events_until(driver, month, day):
     result = []
     current_date = datetime.now()
     target_date = datetime(
-        current_date.year + (month < current_date.month or (month == current_date.month and day < current_date.day)),
+        current_date.year
+        + (
+            month < current_date.month
+            or (month == current_date.month and day < current_date.day)
+        ),
         month,
         day,
     )
 
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
+    WebDriverWait(driver, 10).until(
+        lambda d: d.execute_script("return document.readyState") == "complete"
+    )
     while True:
         time.sleep(1)  # Consider using WebDriverWait for a more efficient approach
         weekly_events = get_weekly_events_with_date(driver)
 
         for (event_month, event_day), daily_events in weekly_events:
             event_year = current_date.year + (
-                event_month < current_date.month or (event_month == current_date.month and event_day < current_date.day)
+                event_month < current_date.month
+                or (event_month == current_date.month and event_day < current_date.day)
             )
             event_datetime = datetime(event_year, event_month, event_day)
 
